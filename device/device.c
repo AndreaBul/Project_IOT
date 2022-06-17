@@ -1,92 +1,79 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "contiki.h"
+#include "coap-engine.h"
+#include "coap-blocking-api.h"
+#include "random.h"
+#include "node-id.h"
+#include "os/dev/leds.h"
 
-/*	Declare server IP	*/
-#define SERVER_EP "coap://[fd00::1]:5683" 
-#define REQ_INTERVAL 5
+/* Log configuration */
+#include "coap-log.h"
+#include "sys/log.h"
+#define LOG_MODULE "App"
+#define LOG_LEVEL LOG_LEVEL_DBG
 
-static int device_type = 0;	//0: sensor;	1: actuator;	2: both
+#define TRIGGER_INTERVAL	10
 
-/* Declare and auto-start this file's process */
-PROCESS(device_process, "Sensor/Actuator Device");
-AUTOSTART_PROCESSES(&device_process);
+#define SERVER_EP "coap://[fd00::1]:5683"
 
+extern coap_resource_t bin;
+extern bool state;
+bool registered = false;
 
+PROCESS(node_process, "node");
+AUTOSTART_PROCESSES(&node_process);
 
-/*	Handler for the response from theserver	*/
+static struct etimer timer;
+void client_chunk_handler(coap_message_t *response)
+{
+	const uint8_t *chunk;
 
-void client_chunk_handler(coap_message_t *response) {
- 
-	if(response == NULL) { 
-		printf("Request timed out\n"); 
+	if(response == NULL) {
+		LOG_INFO("Request timed out");
 		return;
 	}
-	const uint8_t *chunk;
-	coap_get_payload(response, &chunk);
-	printf("Received Response: %s\n", (char *)chunk);
+	
+	int len = coap_get_payload(response, &chunk);
+	registered = true;	
 
-	//If the response is "Accept" I registered the device
-	if(strcmp( (char *)chunk, "Accept") == 0)
-		registration_status = true;
-	else
-		registration_status = false;
-
+	LOG_INFO("|%.*s \n", len, (char *)chunk);
 }
 
-
-PROCESS_THREAD(device_process, ev, data){
+PROCESS_THREAD(node_process, ev, data){
 
 	static coap_endpoint_t server_ep;
-  	static coap_message_t request[1];  /* the packet can be treated as pointer */
+	static coap_message_t request[1];
 
 	PROCESS_BEGIN();
 
-	/*	Get device type from command line and activate the related resources	*/
-	while(1){
-		printf("\nType the kind of device you want to deploy: \"sensor\", \"actuator\", \"both\"\n");
-		PROCESS_WAIT_EVENT_UNTIL(ev == serial_line_event_message);
-		//Sensor => I activate sensor resources
-		if(strcmp(data, "sensor") == 0){
-			//No led needed
-			device_type = 0;
+	leds_set(LEDS_NUM_TO_MASK(LEDS_RED));	
 
-			/*	Resource activation	*/
-			//coap_activate_resource(&res_humidity, "humidity");
-			break;
-		}
-		//Actuator => I activate actuator resources
-		else if(strcmp(data, "actuator") == 0){
-			device_type = 1;
+	coap_activate_resource(&bin, "bin");
 
-			/*	Resource activation	*/
-			//coap_activate_resource(&res_sprinkler, "sprinkler");
-			break;
-		}
-		//Both => I activate all resources
-		else if(strcmp(data, "both") == 0){
-			device_type = 2;
+	coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 
-			/*	Resource activation	*/
+	coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
+	coap_set_header_uri_path(request, "registration");
 
-			//sensors
-			//coap_activate_resource(&res_humidity, "humidity");
+	LOG_DBG("Sending the Request for registration\n");
+	COAP_BLOCKING_REQUEST(&server_ep, request, client_chunk_handler);
 
+	while(!registered){
+		LOG_DBG("retry... \n");
+		COAP_BLOCKING_REQUEST(&server_ep, request, client_chunk_handler);
+	}
+	etimer_set(&timer, CLOCK_SECOND * TRIGGER_INTERVAL);
 
-			//actuators
-			//coap_activate_resource(&res_sprinkler, "sprinkler");
-
-			break;
+	while(true) {
+		PROCESS_WAIT_EVENT();
+		
+		if(ev == PROCESS_EVENT_TIMER && data == &timer){	
+			thermostat.trigger();
+			etimer_reset(&timer);
 		}
 	}
 
-
-	while(1){
-
-		//Possible events: timer, unregister event, serial line message
-		PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER || ev == UNREGISTER || ev == serial_line_event_message);
-
-
-	}
-  	PROCESS_END();
+  PROCESS_END();
 }
