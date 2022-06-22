@@ -70,7 +70,6 @@ PROCESS_THREAD(node_process, ev, data){
 		PROCESS_WAIT_EVENT();
 		
 		if(ev == PROCESS_EVENT_TIMER && data == &timer){	
-			thermostat.trigger();
 			etimer_reset(&timer);
 		}
 	}
