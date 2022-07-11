@@ -48,14 +48,12 @@ PROCESS_THREAD(node_process, ev, data){
 
 	PROCESS_BEGIN();
 
-	leds_set(LEDS_NUM_TO_MASK(LEDS_RED));	
-
 	coap_activate_resource(&bin, "bin");
 
 	coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 
-	coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
-	coap_set_header_uri_path(request, "registration");
+	coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
+	coap_set_header_uri_path(request, "/registration");
 
 	LOG_DBG("Sending the Request for registration\n");
 	COAP_BLOCKING_REQUEST(&server_ep, request, client_chunk_handler);
