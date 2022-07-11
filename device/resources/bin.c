@@ -3,6 +3,8 @@
 #include <string.h>
 #include "os/dev/leds.h"
 
+
+
 /* Log configuration */
 #include "sys/log.h"
 #define LOG_MODULE "Bin"
@@ -13,6 +15,7 @@ extern bool bin_status;
 static unsigned int g_accept = APPLICATION_JSON;
 static unsigned int p_accept = APPLICATION_JSON;
 int fullness = 0;
+int fullness_value = 90;
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -33,7 +36,6 @@ EVENT_RESOURCE(bin,
 
 
 static void res_event_handler(void) {
-    fullness = fullness + rand()%20;
     coap_notify_observers(&bin);
 }
 
@@ -45,6 +47,11 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 	
 	char response_message[COAP_MAX_CHUNK_SIZE];
 	fullness = fullness + rand()%20;
+	if(fullness > fullness_value){
+		LOG_INFO("The bin is full %d", fullness);
+		fullness = fullness_value;
+	}
+
 	coap_get_header_accept(request, &g_accept);
 	//Can handle only JSON format
 	if(g_accept == APPLICATION_JSON){
@@ -52,16 +59,29 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 		coap_set_header_content_format(response, APPLICATION_JSON);
 
 		//take the status
-
-		int len = snprintf(response_message, COAP_MAX_CHUNK_SIZE, "{\"bin\":%d}", fullness);
+		int len = snprintf(response_message, COAP_MAX_CHUNK_SIZE, "{\"bin_fullness\":%d}", fullness);
 		if(len > 0){
 			//prepare the message
 			memcpy(buffer, (uint8_t*)response_message, len);
 			coap_set_header_etag(response, (uint8_t *)&len, 1);
       			coap_set_payload(response, buffer, len); 
-		}else
+		}else{
 			LOG_INFO("Error: Couldn't form the response\n");
-	}else{
+		}
+
+	}
+	/*	else if(accept == APPLICATION_XML) {
+    		coap_set_header_content_format(response, APPLICATION_XML);
+		int len = snprintf(response_message, COAP_MAX_CHUNK_SIZE, "<bin_fullness=\"%d\"/>", fullness);
+		if(len > 0){
+			//prepare the message
+			memcpy(buffer, (uint8_t*)response_message, len);
+			coap_set_header_etag(response, (uint8_t *)&len, 1);
+      			coap_set_payload(response, buffer, len); 
+		} */
+	
+    
+  	else {
 
 	  coap_set_status_code(response, NOT_ACCEPTABLE_4_06);
 	  const char *msg = "The only supported type is json";
@@ -72,11 +92,9 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 
 static void res_post_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
 
-
 	if(request == NULL){
-
-			LOG_INFO("[LIGHT]: Empty request\n");
-			return;
+		LOG_INFO("Error, Wrong request\n");
+		return;
 	}
 
 	coap_get_header_accept(request, &p_accept);
@@ -84,15 +102,13 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 	if(p_accept == APPLICATION_JSON){
 
 		size_t pay_len = 0;
-		char *new_status = NULL;
-		char *var = NULL;
 		bool good_req = false;
 
 		const uint8_t **message;
 		message = malloc(request->payload_len);
 
 		if(message == NULL){
-			LOG_INFO("[LIGHT]: Empty payload\n");
+			LOG_INFO("Error, The payload was empty\n");
 			return;
 		}
 
@@ -100,20 +116,44 @@ static void res_post_handler(coap_message_t *request, coap_message_t *response, 
 		LOG_INFO("Message received: %s\n", (char *)*message);
 
 		if(pay_len > 0){
-		
-			//get new value. 
+			//Splitting the payload
+			char *split;
+
+			//Take the variable
+			split = strtok((char*)*message, ":");	
+			if(split == NULL){
+				LOG_INFO("Error");
+				return;			
+			}
+
+			split = strtok(NULL, ":");	
+			if(split == NULL){
+				LOG_INFO("Error, couldn't retrieve the value");
+				return;			
+			}
+
+			const char* start = split;
+			const char* end = split + strlen(split) - 1;
+			size_t size = end - start;
+			
+			if(size == 0) {
+				LOG_INFO("Size equal to 0.\n");
+				return;
+			} else {
+				char *new_value = malloc(size);
+				strncpy(new_value, start, size);
+				new_value[size] = '\0';
+				int value = atoi(new_value);
+				if(value  > 0){
+					fullness_value = value;
+					LOG_INFO("New fullness value: %d\n", fullness_value);				
+				}
+
+			}
 
 		}
 
-
-		//Check if variable and new_status are not null
-		if(var != NULL && new_status != NULL){
-
-
-
-
-		}
-    
+  		free(message);
 		//Send the response
 		if(good_req)
 			coap_set_status_code(response, CHANGED_2_04);
