@@ -4,18 +4,23 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 import it.unipi.iot.*;
+import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 public class Main {
-	static Server regServer = new Server(5683);
-	
+	protected static Server server;
+
 	public static void main(String[] args) {
+		System.out.println("---- CLIENT STARTED ----");
+		server = new Server();
+
+		//new thread to let server running 
 		new Thread() {
 			public void run() {
-				regServer.start(); 
+				server.start();
 			}
 		}.start();
 		
@@ -56,9 +61,7 @@ public class Main {
 	
 	public static void showResources() {
 		System.out.println("SHOWING THE RESOURCES: ");
-		for (RegisteredResource resource : Server.regResources) {
-			System.out.println(resource.getName() + " " + resource.getPath());
-		}
+
 	}
 	
 

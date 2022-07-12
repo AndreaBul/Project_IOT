@@ -39,19 +39,10 @@ public class Registrant extends CoapResource {
 			}
 
 			RegisteredResource newOne = new RegisteredResource(path[1].replace("<", "").replace(">", ""), title, address.toString().replace("/",""), obs);
-			if (!isPresent(newOne)) {
-				Server.regResources.add(newOne);
-				//System.out.println("New resource " + newOne.getTitle() + " registered");
-			}
+
 		}	
 	}
 	
-	public boolean isPresent(RegisteredResource res) {
-		for (int j = 0; j < Server.regResources.size(); j++) {
-			if (res.getAddr().equals(Server.regResources.get(j).getAddr()) && res.getPath().equals(Server.regResources.get(j).getPath()))
-				return true;
-		}
-		return false;
-	}
+
 	
 }
