@@ -26,7 +26,7 @@ public class RegisteredResource extends CoapClient {
 		this.isObservable = isObs;
 		
 		this.type = "sensor";
-
+		Sensor sensor = new Sensor(path, title, addr, uri);
 		System.out.println("Node " + name + ", " + path + " registered");
 	}
 	
@@ -56,5 +56,9 @@ public class RegisteredResource extends CoapClient {
 	
 	public String getType() {
 		return this.type;
-	}	
+	}
+
+	private static void observe(Sensor sensor) {
+		new unipi.iot.CoapObserverClient(sensor).startObserving();;
+	}
 }
