@@ -1,4 +1,4 @@
-build/cooja/obj/bin.o: resources/bin.c \
+build/cooja/obj/res_unregister.o: resources/res_unregister.c \
  ../../../os/net/app-layer/coap/module-macros.h ../../../os/contiki.h \
  ../../../arch/platform/cooja/./contiki-conf.h project-conf.h \
  ../../../os/contiki-default-conf.h ../../../os/sys/process.h \
@@ -26,8 +26,10 @@ build/cooja/obj/bin.o: resources/bin.c \
  ../../../os/net/app-layer/coap/coap-observe.h \
  ../../../os/net/app-layer/coap/coap-separate.h \
  ../../../os/net/app-layer/coap/coap-observe-client.h \
- ../../../os/sys/log.h ../../../os/sys/log-conf.h
-resources/bin.c :
+ ../../../os/dev/leds.h ../../../os/dev/gpio-hal.h \
+ ../../../arch/platform/cooja/./dev/gpio-hal-arch.h ../../../os/sys/log.h \
+ ../../../os/sys/log-conf.h
+resources/res_unregister.c :
  ../../../os/net/app-layer/coap/module-macros.h ../../../os/contiki.h :
  ../../../arch/platform/cooja/./contiki-conf.h project-conf.h :
  ../../../os/contiki-default-conf.h ../../../os/sys/process.h :
@@ -55,4 +57,6 @@ resources/bin.c :
  ../../../os/net/app-layer/coap/coap-observe.h :
  ../../../os/net/app-layer/coap/coap-separate.h :
  ../../../os/net/app-layer/coap/coap-observe-client.h :
- ../../../os/sys/log.h ../../../os/sys/log-conf.h :
+ ../../../os/dev/leds.h ../../../os/dev/gpio-hal.h :
+ ../../../arch/platform/cooja/./dev/gpio-hal-arch.h ../../../os/sys/log.h :
+ ../../../os/sys/log-conf.h :

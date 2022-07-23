@@ -33,30 +33,30 @@ public class Sensor {
     }
     
     
-    public void observeResource() {
-		
-		if(observable) {
-			
-			client.observe(
-					new CoapHandler() {
-						public void onLoad(CoapResponse response) {
-							JSONObject responseJSON = new JSONObject(response.getResponseText());
-							
-							//read and store the value in the array
-							status = responseJSON.getString(resourceType);
-							
-
-							
-						}
-							public void onError() {
-								System.err.println("--- Observation Failed ---"); 
-							}
-					}, MediaTypeRegistry.APPLICATION_JSON);
-			
-			
-		}else {
-			System.out.println("The resource " + resourceType + " is not observable");
-			return;
-		}
+//    public void observeResource() {
+//
+//		if(observable) {
+//
+//			client.observe(
+//					new CoapHandler() {
+//						public void onLoad(CoapResponse response) {
+//							JSONObject responseJSON = new JSONObject(response.getResponseText());
+//
+//							//read and store the value in the array
+//							status = responseJSON.getString(resourceType);
+//
+//
+//
+//						}
+//							public void onError() {
+//								System.err.println("--- Observation Failed ---");
+//							}
+//					}, MediaTypeRegistry.APPLICATION_JSON);
+//
+//
+//		}else {
+//			System.out.println("The resource " + resourceType + " is not observable");
+//			return;
+//		}
 	
 }
