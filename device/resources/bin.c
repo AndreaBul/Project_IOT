@@ -23,7 +23,7 @@ static void res_event_handler(void);
 /*----------------------------------------------------------------------------------------------*/
 
 EVENT_RESOURCE(bin,
-         "title=\"Bin Sensor\";rt=\"bin\";if=\"sensor\";obs",
+         "title=\"Bin fullness Sensor\";rt=\"bin\";if=\"sensor\";obs",
 	res_get_handler,
         res_post_put_handler,
         res_post_put_handler,
