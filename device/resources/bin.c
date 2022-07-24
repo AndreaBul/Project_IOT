@@ -10,8 +10,8 @@
 #define LOG_LEVEL LOG_LEVEL_APP
 
 /* Range of values for humidity */
-int min_bin_fullness =	0;
-int max_bin_fullness =	100;
+int min_bin_fullness =	0; //min value needed to remove the trash
+int max_bin_fullness =	100; //max value that the bin can have
 int bin_fullness = 0;
 static unsigned int get_accept = APPLICATION_JSON;
 static unsigned int post_accept = APPLICATION_JSON;
@@ -34,8 +34,12 @@ EVENT_RESOURCE(bin,
 
 static void res_event_handler(void) {
  
-	//Randomly generated bin fullness value for each observation
-    bin_fullness = (rand() % (max_bin_fullness - min_bin_fullness + 1)) + min_bin_fullness;
+    //Randomly generated bin fullness value for each observation
+    bin_fullness = (rand() % (10 + 1)) + bin_fullness;
+    if(bin_fullness > 100){
+	bin_fullness = 100;
+    }
+    //TODO, check if the bin_fullness value is greater than the min/max
     coap_notify_observers(&bin);
 }
 
@@ -44,7 +48,7 @@ static void res_event_handler(void) {
 
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
-	
+
 	char response_message[COAP_MAX_CHUNK_SIZE];
 
 	coap_get_header_accept(request, &get_accept);
@@ -75,8 +79,6 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 
 static void res_post_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset){
 
-	
-	
 	if(request == NULL){
 
 		LOG_INFO("[HUM]: Empty request\n");

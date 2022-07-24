@@ -90,6 +90,7 @@ PROCESS_THREAD(device_process, ev, data){
 
 		//Only if registered I handle the timer event
 		if(ev == PROCESS_EVENT_TIMER && registration_status){
+			bin.trigger();
 			etimer_reset(&e_timer);
 		}
 		//Only if !registered I accept command line values
