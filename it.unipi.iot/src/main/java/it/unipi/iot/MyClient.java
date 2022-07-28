@@ -1,6 +1,5 @@
 package it.unipi.iot;
 
-import it.unipi.iot.resource_devices.Area;
 import it.unipi.iot.server.ResourceDeviceHandler;
 import it.unipi.iot.server.Server;
 
@@ -53,40 +52,13 @@ public class MyClient {
 					case "!getSensors":
 						getSensors();
 						break;
-						
 
 					case "!getAddressResources":
 						getAddressResources();
 						break;
-						
-					case "!getAreasList":
-						getAreasList();
-						break;
-						
-					case "!getAreasInfo":
-						showAreasInfo();
-						break;
 
-					
 					case "!getAvgBinFullness":
 						getAvgBinFullness();
-						break;
-						
-
-					case "!setDeviceArea":
-						setDeviceArea();
-						break;
-						
-					case "!removeDeviceArea":
-						removeDeviceArea();
-						break;
-						
-					case "!switchAreaMode":
-						switchAreaMode();
-						break;
-						
-					case "!editAreaThreshold":
-						editAreaThreshold();
 						break;
 						
 					case "!removeDevicesAddress":
@@ -125,16 +97,10 @@ public class MyClient {
 		
 		System.out.println("!getSensors 		-->	Get the list of registered sensors");
 		System.out.println("!getAddressResources	-->	Get the list of registered IDs with a given address");
-		System.out.println("!getAreasInfo		-->	Get the list of areas and their info");
-		System.out.println("!getAreasList		-->	Get the list of areas and their devices");
 		System.out.println("!getAvgBinFullness		-->	Get the Avg bin fullness of the last 10 measurements for all the sensors");
 
 		System.out.println("");
 		System.out.println("	--	POST COMMANDS	--	");
-		System.out.println("!setDeviceArea		-->	Set the area the device belongs to");
-		System.out.println("!removeDeviceArea	-->	Remove the area the device belongs to");
-		System.out.println("!switchAreaMode		-->	Set the management mode of an area");
-		System.out.println("!editAreaThreshold	-->	Modify the min/max thresholds for bin fullness");
 		System.out.println("!removeDevicesAddress	-->	Remove the devices with given address");
 		
 		System.out.println("");
@@ -172,31 +138,6 @@ public class MyClient {
 		handler.getSensorsBinFullness();
 		System.out.println("");
 	}
-
-
-	
-	//Get the list of the areas with their devices
-	private static void getAreasList() {
-		System.out.println("	--	Get Areas Info	--	");
-		handler.getAreasList();
-		System.out.println("");
-	}
-	
-	//IT SHOWS THE INFO OF AN AREA (THRESHOLDS, MANAGEMENT MODE)
-	private static boolean showAreasInfo() {
-		System.out.println("Available areas: ");
-		for(String areaId: handler.getIdArea().keySet()) {
-			System.out.print("[ ");
-			handler.getIdArea().get(areaId).printAreaInfo();
-			System.out.println(" ]");
-		}
-		System.out.println("");
-		
-		if(handler.getIdArea().keySet().size() == 0)
-			return false;
-		return true;
-		
-	}
 	
 	//IT SHOWS ALL THE RESOURCES WITH A GIVEN ADDRESS
 	private static void getAddressResources() {
@@ -221,193 +162,7 @@ public class MyClient {
 			e.printStackTrace();
 		} 
 	}
-	
-/*
- * 
- * 		SET METHODS
- * 
- */
-	
 
-
-	//Set the area a device belongs to
-	private static void setDeviceArea() {
-		
-		System.out.println("Available Devices: ");
-		handler.devicesList();
-		
-		System.out.println("\nType the ID of the device");
-		
-		//Get the device ID and check the validity
-		try {
-			String id = reader.readLine();
-			
-			int deviceID = 0;
-			try{
-				deviceID = Integer.parseInt(id);
-			} catch(NumberFormatException e) {
-				System.out.println("The input must be a number\n");
-				return;
-			}
-		        
-		    
-			if(!handler.getDevice(deviceID)) {
-				System.out.println("Error! This is not a device id.\n");
-				return;
-			}
-			
-			System.out.println("Type the area");
-		
-			//Get area ID
-			String area = reader.readLine().toLowerCase();
-			handler.addDeviceArea(deviceID, area);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-
-		
-	}
-	
-	//REMOVE DEVICE FROM GIVEN AREA
-	//Remove the area a device belongs to
-	private static void removeDeviceArea() {
-		
-		System.out.println("Available Devices: ");
-		handler.devicesList();
-		
-		System.out.println("\nType the ID of the device");
-	
-		//Get the Device ID and check the validity
-		try {
-			String id = reader.readLine();
-			
-			int deviceID = 0;
-			try{
-				deviceID = Integer.parseInt(id);
-			} catch(NumberFormatException e) {
-				System.out.println("The input must be a number\n");
-				return;
-			}
-			if(!handler.getDevice(deviceID)) {
-				System.out.println("Error! This is not a device id.\n ");
-				return;
-			}
-			
-			handler.removeDeviceArea(deviceID);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-	}
-	
-	//GIVEN AN AREA IT ALLOWS TO SWITCH AUTO/MANUAL MANAGEMENT
-	
-	//SWITCH AREA MANAGEMENT MODE: AUTO/MANUAL
-	private static void switchAreaMode() {
-		
-		if(showAreasInfo()) {
-			try {
-				System.out.print("Type the area where management mode will be changed: ");
-				
-			
-				String area = reader.readLine();
-				
-				if(handler.getIdArea().get(area) == null) {
-					System.out.println("Error! Area Id present in the system");
-					return;
-				}
-				
-				System.out.println("Type the new management mode (Auto[1] / Manual[0]):");
-			
-				String auto = reader.readLine();
-				
-				
-				if(auto.compareTo("0") == 0)
-					handler.getIdArea().get(area).setAutoManage(false);
-				else if(auto.compareTo("1") == 0)
-					handler.getIdArea().get(area).setAutoManage(true);
-				else {
-					System.out.println("Error: value not valid\n");
-					return;
-				}
-		
-					
-			} catch(IOException e) {
-				
-				e.printStackTrace();
-			}
-		}else {
-			return;
-		}
-			
-		System.out.println("");
-	}
-	
-	//GIVEN AN AREA IT ALLOWS TO CHANGE THE THRESHOLDS
-	
-	//EDIT THE AREA THRESHOLDS
-	private static void editAreaThreshold() {
-		
-		if(showAreasInfo()) {
-			
-			try {
-				
-				System.out.print("Type the area where threshold values will be changed: ");
-				
-				
-				String area = reader.readLine();
-				
-				if(handler.getIdArea().get(area) == null) {
-					System.out.println("Error! Area Id present in the system");
-					return;
-				}
-				
-				Area area_obj = handler.getIdArea().get(area);
-			  
-				System.out.print("Insert max bin fullness tolerated in this area: ");
-				int max_h = 0;
-				try{
-					max_h = Integer.parseInt(reader.readLine());
-				} catch(NumberFormatException e) {
-					System.out.println("The input must be a number\n");
-					return;
-				}
-			        
-			   
-				System.out.print("Insert min bin fullness tolerated in this area: ");
-				int min_h = 0;
-				try{
-					min_h = Integer.parseInt(reader.readLine());
-				}catch(NumberFormatException e) {
-					System.out.println("The input must be a number\n");
-					return;
-				}
-			        
-			    
-				if(max_h < min_h) {
-					System.out.println("Error in typing parameters. No modification done\n");
-					return;
-				}
-				
-				area_obj.setMaxBinFullness(max_h);
-				area_obj.setMinBinFullness(min_h);
-				
-				System.out.println("Modifications done");
-				
-				
-			}catch(IOException e) {
-				
-				e.printStackTrace();
-			}
-			
-			
-		}else
-			return;
-		
-		System.out.println("");
-	}
-	
 	//Remove devices with given address
 	
 	//REMOVE AND UNREGISTER DEVICES WITH GIVEN ADDRESS
@@ -446,9 +201,5 @@ public class MyClient {
 		
 	}
 
-	
-	
-	
-	
-	
+
 }

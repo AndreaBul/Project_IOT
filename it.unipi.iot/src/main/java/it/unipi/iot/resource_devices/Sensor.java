@@ -62,47 +62,15 @@ public class Sensor extends ResourceDevice{
 					new CoapHandler() {
 						public void onLoad(CoapResponse response) {
 							JSONObject responseJSON = new JSONObject(response.getResponseText());
-							
-	
 							//read and store the value in the array
 							observedValues[index] = responseJSON.getInt(resourceType);
-						
-							
 							//update the index
 							index = (index+1)%MAX_OBSERVATIONS;
-							
 							//check if the array become full
 							if(!full && index == 0)
 								full = true;
-							
 							//Take the ResourceDeviceHandler instance
 							final ResourceDeviceHandler handler = ResourceDeviceHandler.getInstance();
-
-							
-							if(handler.getIdArea().get(area).isAutoManage()) {
-								int max_threshold = 0, min_threshold = 0;
-								
-								
-								switch(resourceType) {
-								case "bin":
-									max_threshold = handler.getIdArea().get(area).getMaxBinFullness();
-									min_threshold = handler.getIdArea().get(area).getMinBinFullness();
-									break;
-								default:
-									System.out.println("Error: ResourceType not defined");
-									
-								}
-								//check if under/above tolerance
-								
-								if(getLastAvgObservation() != 0 && getLastAvgObservation() > max_threshold) {
-
-										//NEED TO EMPTY THE BIN
-										
-										
-								}
-								
-							}
-
 							
 						}
 							public void onError() {

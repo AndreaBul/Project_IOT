@@ -135,8 +135,7 @@ public class Registration extends CoapResource{
 			//Add in the map: id - sensor
 			handler.setIdDeviceMap(myId, sensor);
 			//Put device in default area
-			handler.addDeviceArea(myId, "default");
-			
+
 			//If the resource is observable, start observing.
 			if(observable) {
 				new Thread() {
