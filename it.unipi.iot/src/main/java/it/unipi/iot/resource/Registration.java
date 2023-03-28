@@ -17,7 +17,7 @@ public class Registration extends CoapResource{
 		System.out.println("Registration Resource created\n");
 	}
 	
-	public void handleGET(CoapExchange exchange) {
+	public void handlePOST(CoapExchange exchange) {
 		
 		System.out.println("[SERVER]: Handling Registration Request");
 
@@ -70,11 +70,11 @@ public class Registration extends CoapResource{
 	private boolean deviceRegistration(String address, String resource) {
 		String[] parameters = resource.split(";");
 
-		String[] path = parameters[1].split(",");
-		String title = parameters[2];
-		Boolean obs = (parameters.length == 6);
+		String[] path = parameters[0].split(",");
+		String title = parameters[1];
+		Boolean obs = (parameters.length == 5);
 
-		RegisteredResource newOne = new RegisteredResource(path[1].replace("<", "").replace(">", ""), title, address.toString().replace("/",""), obs);
+		RegisteredResource newOne = new RegisteredResource(path[0].replace("<", "").replace(">", ""), title, address.toString().replace("/",""), obs);
 		MyClient.insertNewSensor(newOne);
 		return true;
 	}
